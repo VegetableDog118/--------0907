@@ -1,0 +1,262 @@
+version: '3.8'
+
+services:
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: interface-platform-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: interface_platform
+      MYSQL_USER: platform
+      MYSQL_PASSWORD: platform123
+      TZ: Asia/Shanghai
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./config/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - platform-network
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: interface-platform-redis
+    restart: always
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+      - ./config/redis/redis.conf:/etc/redis/redis.conf
+    command: redis-server /etc/redis/redis.conf
+    networks:
+      - platform-network
+
+  # Nacos注册中心和配置中心
+  nacos:
+    image: nacos/nacos-server:v2.2.3-slim
+    container_name: interface-platform-nacos
+    restart: always
+    environment:
+      MODE: standalone
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: mysql
+      MYSQL_SERVICE_PORT: 3306
+      MYSQL_SERVICE_DB_NAME: nacos_config
+      MYSQL_SERVICE_USER: root
+      MYSQL_SERVICE_PASSWORD: root123456
+      MYSQL_SERVICE_DB_PARAM: characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+      JVM_XMS: 256m
+      JVM_XMX: 256m
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    volumes:
+      - nacos_data:/home/nacos/data
+      - nacos_logs:/home/nacos/logs
+    depends_on:
+      - mysql
+    networks:
+      - platform-network
+
+  # Nginx负载均衡
+  nginx:
+    image: nginx:alpine
+    container_name: interface-platform-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - ./frontend/dist:/usr/share/nginx/html
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - gateway-service
+    networks:
+      - platform-network
+
+  # 网关服务
+  gateway-service:
+    build:
+      context: ./backend/gateway-service
+      dockerfile: Dockerfile
+    container_name: interface-platform-gateway
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      - nacos
+      - redis
+    networks:
+      - platform-network
+
+  # 用户服务
+  user-service:
+    build:
+      context: ./backend/user-service
+      dockerfile: Dockerfile
+    container_name: interface-platform-user-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: interface_platform
+      MYSQL_USERNAME: platform
+      MYSQL_PASSWORD: platform123
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - mysql
+      - nacos
+      - redis
+    networks:
+      - platform-network
+
+  # 接口管理服务
+  interface-service:
+    build:
+      context: ./backend/interface-service
+      dockerfile: Dockerfile
+    container_name: interface-platform-interface-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: interface_platform
+      MYSQL_USERNAME: platform
+      MYSQL_PASSWORD: platform123
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - mysql
+      - nacos
+      - redis
+    networks:
+      - platform-network
+
+  # 审批服务
+  approval-service:
+    build:
+      context: ./backend/approval-service
+      dockerfile: Dockerfile
+    container_name: interface-platform-approval-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: interface_platform
+      MYSQL_USERNAME: platform
+      MYSQL_PASSWORD: platform123
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - mysql
+      - nacos
+      - redis
+    networks:
+      - platform-network
+
+  # 数据源服务
+  datasource-service:
+    build:
+      context: ./backend/datasource-service
+      dockerfile: Dockerfile
+    container_name: interface-platform-datasource-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: interface_platform
+      MYSQL_USERNAME: platform
+      MYSQL_PASSWORD: platform123
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - mysql
+      - nacos
+      - redis
+    networks:
+      - platform-network
+
+  # 认证服务
+  auth-service:
+    build:
+      context: ./backend/auth-service
+      dockerfile: Dockerfile
+    container_name: interface-platform-auth-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: interface_platform
+      MYSQL_USERNAME: platform
+      MYSQL_PASSWORD: platform123
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - mysql
+      - nacos
+      - redis
+    networks:
+      - platform-network
+
+  # 通知服务
+  notification-service:
+    build:
+      context: ./backend/notification-service
+      dockerfile: Dockerfile
+    container_name: interface-platform-notification-service
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: interface_platform
+      MYSQL_USERNAME: platform
+      MYSQL_PASSWORD: platform123
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - mysql
+      - nacos
+      - redis
+    networks:
+      - platform-network
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  nacos_data:
+    driver: local
+  nacos_logs:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  platform-network:
+    driver: bridge

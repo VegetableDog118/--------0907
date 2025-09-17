@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.powertrading.interfaces.mapper.InterfaceParameterMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.powertrading.interfaces.entity.InterfaceParameter">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="interface_id" property="interfaceId" jdbcType="VARCHAR"/>
+        <result column="param_name" property="paramName" jdbcType="VARCHAR"/>
+        <result column="param_type" property="paramType" jdbcType="VARCHAR"/>
+        <result column="param_location" property="paramLocation" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="required" property="required" jdbcType="TINYINT"/>
+        <result column="default_value" property="defaultValue" jdbcType="VARCHAR"/>
+        <result column="validation_rule" property="validationRule" jdbcType="VARCHAR"/>
+        <result column="example" property="example" jdbcType="VARCHAR"/>
+        <result column="sort_order" property="sortOrder" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, interface_id, param_name, param_type, param_location, description, required, 
+        default_value, validation_rule, example, sort_order, create_time, update_time
+    </sql>
+
+    <!-- 根据接口ID查询参数列表 -->
+    <select id="selectByInterfaceId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM interface_parameters
+        WHERE interface_id = #{interfaceId,jdbcType=VARCHAR}
+        ORDER BY sort_order ASC, create_time ASC
+    </select>
+
+    <!-- 根据接口ID删除参数 -->
+    <delete id="deleteByInterfaceId" parameterType="java.lang.String">
+        DELETE FROM interface_parameters WHERE interface_id = #{interfaceId,jdbcType=VARCHAR}
+    </delete>
+
+    <!-- 批量插入参数 -->
+    <insert id="batchInsert">
+        INSERT INTO interface_parameters
+        (<include refid="Base_Column_List"/>)
+        VALUES
+        <foreach collection="parameters" item="param" separator=",">
+            (#{param.id,jdbcType=VARCHAR}, #{param.interfaceId,jdbcType=VARCHAR}, 
+             #{param.paramName,jdbcType=VARCHAR}, #{param.paramType,jdbcType=VARCHAR}, 
+             #{param.paramLocation,jdbcType=VARCHAR}, #{param.description,jdbcType=VARCHAR}, 
+             #{param.required,jdbcType=TINYINT}, #{param.defaultValue,jdbcType=VARCHAR}, 
+             #{param.validationRule,jdbcType=VARCHAR}, #{param.example,jdbcType=VARCHAR}, 
+             #{param.sortOrder,jdbcType=INTEGER}, #{param.createTime,jdbcType=TIMESTAMP}, 
+             #{param.updateTime,jdbcType=TIMESTAMP})
+        </foreach>
+    </insert>
+
+    <!-- 根据接口ID和参数名查询参数 -->
+    <select id="selectByInterfaceIdAndParamName" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM interface_parameters
+        WHERE interface_id = #{interfaceId,jdbcType=VARCHAR} 
+          AND param_name = #{paramName,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 获取接口的必需参数列表 -->
+    <select id="selectRequiredParameters" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM interface_parameters
+        WHERE interface_id = #{interfaceId,jdbcType=VARCHAR} 
+          AND required = 1
+        ORDER BY sort_order ASC, create_time ASC
+    </select>
+
+    <!-- 获取标准参数模板 -->
+    <select id="selectStandardParameters" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM interface_parameters
+        WHERE interface_id = 'STANDARD_TEMPLATE'
+        ORDER BY sort_order ASC
+    </select>
+
+</mapper>

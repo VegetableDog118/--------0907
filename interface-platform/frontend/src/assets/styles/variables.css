@@ -1,0 +1,126 @@
+/* 设计系统 - CSS 变量定义 */
+:root {
+  /* 主色调 */
+  --primary-color: #409EFF;
+  --primary-light: #79BBFF;
+  --primary-lighter: #A0CFFF;
+  --primary-extra-light: #D9ECFF;
+  --primary-dark: #337ECC;
+  --primary-darker: #2B73B3;
+
+  /* 辅助色 */
+  --success-color: #67C23A;
+  --warning-color: #E6A23C;
+  --danger-color: #F56C6C;
+  --info-color: #909399;
+
+  /* 中性色 */
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --text-placeholder: #C0C4CC;
+  --text-disabled: #C0C4CC;
+
+  /* 边框色 */
+  --border-base: #DCDFE6;
+  --border-light: #E4E7ED;
+  --border-lighter: #EBEEF5;
+  --border-extra-light: #F2F6FC;
+
+  /* 背景色 */
+  --bg-white: #FFFFFF;
+  --bg-page: #F2F3F5;
+  --bg-light: #F5F7FA;
+  --bg-lighter: #FAFAFA;
+  --bg-extra-light: #FAFCFF;
+
+  /* 阴影 */
+  --shadow-base: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+  --shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  --shadow-lighter: 0 2px 4px 0 rgba(0, 0, 0, 0.12);
+  --shadow-dark: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+
+  /* 字体 */
+  --font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  --font-size-extra-large: 20px;
+  --font-size-large: 18px;
+  --font-size-medium: 16px;
+  --font-size-base: 14px;
+  --font-size-small: 13px;
+  --font-size-extra-small: 12px;
+
+  /* 行高 */
+  --line-height-base: 1.5;
+  --line-height-small: 1.4;
+  --line-height-large: 1.6;
+
+  /* 间距 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-xxl: 24px;
+  --spacing-xxxl: 32px;
+
+  /* 圆角 */
+  --border-radius-base: 4px;
+  --border-radius-small: 2px;
+  --border-radius-large: 6px;
+  --border-radius-round: 20px;
+  --border-radius-circle: 50%;
+
+  /* 过渡动画 */
+  --transition-base: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  --transition-fade: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  --transition-md-fade: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  --transition-slow: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+
+  /* 布局 */
+  --header-height: 60px;
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 64px;
+  --container-max-width: 1200px;
+
+  /* Z-index */
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-modal-backdrop: 1040;
+  --z-index-modal: 1050;
+  --z-index-popover: 1060;
+  --z-index-tooltip: 1070;
+  --z-index-toast: 1080;
+}
+
+/* 暗色主题变量 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: #E4E7ED;
+    --text-regular: #CFD3DC;
+    --text-secondary: #A3A6AD;
+    --text-placeholder: #8D9095;
+    --text-disabled: #6C6E72;
+
+    --border-base: #4C4D4F;
+    --border-light: #414243;
+    --border-lighter: #363637;
+    --border-extra-light: #2B2B2C;
+
+    --bg-white: #1D1E1F;
+    --bg-page: #0A0A0A;
+    --bg-light: #141414;
+    --bg-lighter: #1A1A1A;
+    --bg-extra-light: #1E1E1E;
+  }
+}
+
+/* 响应式断点 */
+:root {
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  --breakpoint-xxl: 1600px;
+}

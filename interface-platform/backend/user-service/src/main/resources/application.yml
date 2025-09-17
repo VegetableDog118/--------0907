@@ -1,0 +1,154 @@
+# 服务配置
+server:
+  port: 8086
+  servlet:
+    context-path: /user-service
+
+# Spring配置
+spring:
+  application:
+    name: user-service
+  
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/interface_platform?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password:
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: UserServiceHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  
+  # Redis配置
+  redis:
+    host: localhost
+    port: 6379
+    password: 
+    database: 0
+    timeout: 5000ms
+    lettuce:
+      pool:
+        max-active: 20
+        max-wait: -1ms
+        max-idle: 10
+        min-idle: 0
+  
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+  
+  # Cloud配置
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+
+# MyBatis Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    call-setters-on-nulls: true
+    jdbc-type-for-null: 'null'
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      update-strategy: NOT_NULL
+      insert-strategy: NOT_NULL
+      select-strategy: NOT_EMPTY
+  # XML映射文件已迁移到MyBatis-Plus方式，不再需要mapper-locations配置
+  # mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: com.powertrading.user.entity
+
+# JWT配置
+jwt:
+  secret: powertrading-interface-platform-secret-key-2024
+  expiration: 86400  # 24小时，单位：秒
+  refresh-expiration: 604800  # 7天，单位：秒
+
+# 日志配置
+logging:
+  level:
+    com.powertrading.user: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: INFO
+    com.baomidou.mybatisplus: DEBUG
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
+  file:
+    name: logs/user-service.log
+    max-size: 100MB
+    max-history: 30
+
+# Actuator配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    env:
+      enabled: true
+
+# Swagger配置
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  packages-to-scan: com.powertrading.user.controller
+  paths-to-match: /api/**
+
+# 应用信息
+info:
+  app:
+    name: '@project.name@'
+    description: '@project.description@'
+    version: '@project.version@'
+    encoding: '@project.build.sourceEncoding@'
+    java:
+      version: '@java.version@'
+
+# 自定义配置
+app:
+  security:
+    # 登录失败锁定配置
+    login-fail:
+      max-attempts: 5
+      lock-time-minutes: 30
+    # 密码策略
+    password:
+      min-length: 8
+      max-length: 20
+      require-uppercase: true
+      require-lowercase: true
+      require-digit: true
+      require-special-char: true
+  # API限流配置
+  rate-limit:
+    enabled: true
+    default-limit: 100
+    default-window: 60

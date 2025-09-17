@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>审批通知</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 300;
+        }
+        .content {
+            padding: 30px;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status.approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status.pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .interface-list {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .interface-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .interface-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>接口订阅审批通知</h1>
+        </div>
+        
+        <div class="content">
+            <p>尊敬的 <strong th:text="${userName}">用户</strong>，</p>
+            
+            <p>您的接口订阅申请已处理完成，详情如下：</p>
+            
+            <div class="info-box">
+                <p><strong>申请编号：</strong><span th:text="${applicationId}">APP001</span></p>
+                <p><strong>申请时间：</strong><span th:text="${submitTime}">2024-01-15 10:30:00</span></p>
+                <p><strong>处理时间：</strong><span th:text="${processTime}">2024-01-15 14:30:00</span></p>
+                <p><strong>处理人：</strong><span th:text="${processBy}">管理员</span></p>
+                <p><strong>审批状态：</strong>
+                    <span class="status" th:classappend="${status}" th:text="${statusText}">已通过</span>
+                </p>
+            </div>
+            
+            <div th:if="${interfaceList != null and !interfaceList.isEmpty()}">
+                <h3>申请接口列表：</h3>
+                <div class="interface-list">
+                    <div class="interface-item" th:each="interface : ${interfaceList}">
+                        <strong th:text="${interface.name}">接口名称</strong>
+                        <span th:text="'(' + ${interface.path} + ')'">(/api/v1/data)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div th:if="${processComment != null and !processComment.isEmpty()}">
+                <h3>处理意见：</h3>
+                <div class="info-box">
+                    <p th:text="${processComment}">审批意见内容</p>
+                </div>
+            </div>
+            
+            <div th:if="${status == 'approved'}">
+                <p>恭喜您！您的申请已通过审批，现在可以使用相关接口了。</p>
+                <a href="#" class="button" th:href="${platformUrl}">访问平台</a>
+            </div>
+            
+            <div th:if="${status == 'rejected'}">
+                <p>很抱歉，您的申请未通过审批。如有疑问，请联系管理员。</p>
+            </div>
+            
+            <p>如有任何问题，请随时联系我们。</p>
+        </div>
+        
+        <div class="footer">
+            <p>此邮件由系统自动发送，请勿回复。</p>
+            <p>电力交易中心接口服务平台</p>
+            <p th:text="${currentYear}">2024</p>
+        </div>
+    </div>
+</body>
+</html>

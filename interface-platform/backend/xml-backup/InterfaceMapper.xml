@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.powertrading.interfaces.mapper.InterfaceMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.powertrading.interfaces.entity.Interface">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="interface_name" property="interfaceName" jdbcType="VARCHAR"/>
+        <result column="interface_path" property="interfacePath" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="category_id" property="categoryId" jdbcType="VARCHAR"/>
+        <result column="data_source_id" property="dataSourceId" jdbcType="VARCHAR"/>
+        <result column="table_name" property="tableName" jdbcType="VARCHAR"/>
+        <result column="request_method" property="requestMethod" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="version" property="version" jdbcType="VARCHAR"/>
+        <result column="sql_template" property="sqlTemplate" jdbcType="LONGVARCHAR"/>
+        <result column="response_format" property="responseFormat" jdbcType="LONGVARCHAR"/>
+        <result column="rate_limit" property="rateLimit" jdbcType="INTEGER"/>
+        <result column="timeout" property="timeout" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="publish_time" property="publishTime" jdbcType="TIMESTAMP"/>
+        <result column="offline_time" property="offlineTime" jdbcType="TIMESTAMP"/>
+        <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+        <result column="update_by" property="updateBy" jdbcType="VARCHAR"/>
+        <result column="publish_by" property="publishBy" jdbcType="VARCHAR"/>
+        <result column="offline_by" property="offlineBy" jdbcType="VARCHAR"/>
+        <result column="offline_reason" property="offlineReason" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 接口VO结果映射 -->
+    <resultMap id="InterfaceVOResultMap" type="com.powertrading.interfaces.vo.InterfaceVO">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="interface_name" property="interfaceName" jdbcType="VARCHAR"/>
+        <result column="interface_path" property="interfacePath" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="category_id" property="categoryId" jdbcType="VARCHAR"/>
+        <result column="category_name" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="version" property="version" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="publish_time" property="publishTime" jdbcType="TIMESTAMP"/>
+        <result column="create_by" property="createBy" jdbcType="VARCHAR"/>
+        <result column="creator_name" property="creatorName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, interface_name, interface_path, description, category_id, data_source_id, table_name, 
+        request_method, status, version, sql_template, response_format, rate_limit, timeout, 
+        create_time, update_time, publish_time, offline_time, create_by, update_by, publish_by, offline_by, offline_reason
+    </sql>
+
+    <!-- 分页查询接口列表 -->
+    <select id="selectInterfacePage" resultMap="InterfaceVOResultMap">
+        SELECT 
+            i.id, i.interface_name, i.interface_path, i.description, i.category_id, 
+            i.status, i.version, i.create_time, i.update_time, i.publish_time, i.create_by,
+            ic.category_name,
+            u.real_name as creator_name
+        FROM interfaces i
+        LEFT JOIN interface_categories ic ON i.category_id = ic.id
+        LEFT JOIN users u ON i.create_by = u.id
+        <where>
+            <if test="req.categoryIds != null and req.categoryIds.size() > 0">
+                AND i.category_id IN
+                <foreach collection="req.categoryIds" item="categoryId" open="(" separator="," close=")">
+                    #{categoryId}
+                </foreach>
+            </if>
+            <if test="req.statusList != null and req.statusList.size() > 0">
+                AND i.status IN
+                <foreach collection="req.statusList" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="req.keyword != null and req.keyword != ''">
+                AND (
+                    i.interface_name LIKE CONCAT('%', #{req.keyword}, '%')
+                    OR i.description LIKE CONCAT('%', #{req.keyword}, '%')
+                    OR i.interface_path LIKE CONCAT('%', #{req.keyword}, '%')
+                )
+            </if>
+            <if test="req.publishedOnly != null and req.publishedOnly == true">
+                AND i.status = 'published'
+            </if>
+        </where>
+        ORDER BY 
+            CASE WHEN i.status = 'published' THEN 1 
+                 WHEN i.status = 'unpublished' THEN 2 
+                 ELSE 3 END,
+            i.update_time DESC
+    </select>
+
+    <!-- 根据ID查询接口 -->
+    <select id="selectById" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM interfaces
+        WHERE id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 根据路径查询接口 -->
+    <select id="selectByPath" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM interfaces
+        WHERE interface_path = #{interfacePath,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 根据名称查询接口 -->
+    <select id="selectByName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM interfaces
+        WHERE interface_name = #{interfaceName,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 根据ID查询接口详情（带关联信息） -->
+    <select id="selectInterfaceById" parameterType="java.lang.String" resultMap="InterfaceVOResultMap">
+        SELECT 
+            i.id, i.interface_name, i.interface_path, i.description, i.category_id, 
+            i.status, i.version, i.create_time, i.update_time, i.publish_time, i.create_by,
+            ic.category_name,
+            u.real_name as creator_name
+        FROM interfaces i
+        LEFT JOIN interface_categories ic ON i.category_id = ic.id
+        LEFT JOIN users u ON i.create_by = u.id
+        WHERE i.id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 批量更新接口状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE interfaces
+        SET status = #{status,jdbcType=VARCHAR},
+            update_by = #{operatorId,jdbcType=VARCHAR},
+            update_time = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 查询已发布的接口列表 -->
+    <select id="selectPublishedInterfaces" resultMap="InterfaceVOResultMap">
+        SELECT 
+            i.id, i.interface_name, i.interface_path, i.description, i.category_id, 
+            i.status, i.version, i.create_time, i.update_time, i.publish_time, i.create_by,
+            ic.category_name,
+            u.real_name as creator_name
+        FROM interfaces i
+        LEFT JOIN interface_categories ic ON i.category_id = ic.id
+        LEFT JOIN users u ON i.create_by = u.id
+        WHERE i.status = 'published'
+        ORDER BY i.publish_time DESC
+    </select>
+
+    <!-- 根据状态查询接口列表 -->
+    <select id="selectByStatus" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM interfaces
+        WHERE status = #{status,jdbcType=VARCHAR}
+        ORDER BY update_time DESC
+    </select>
+
+    <!-- 插入接口 -->
+    <insert id="insert" parameterType="com.powertrading.interfaces.entity.Interface">
+        INSERT INTO interfaces
+        (<include refid="Base_Column_List"/>)
+        VALUES
+        (#{id,jdbcType=VARCHAR}, #{interfaceName,jdbcType=VARCHAR}, #{interfacePath,jdbcType=VARCHAR}, 
+         #{description,jdbcType=VARCHAR}, #{categoryId,jdbcType=VARCHAR}, #{dataSourceId,jdbcType=VARCHAR}, 
+         #{tableName,jdbcType=VARCHAR}, #{requestMethod,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, 
+         #{version,jdbcType=VARCHAR}, #{sqlTemplate,jdbcType=LONGVARCHAR}, #{responseFormat,jdbcType=LONGVARCHAR}, 
+         #{rateLimit,jdbcType=INTEGER}, #{timeout,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, 
+         #{updateTime,jdbcType=TIMESTAMP}, #{publishTime,jdbcType=TIMESTAMP}, #{offlineTime,jdbcType=TIMESTAMP}, 
+         #{createBy,jdbcType=VARCHAR}, #{updateBy,jdbcType=VARCHAR}, #{publishBy,jdbcType=VARCHAR}, 
+         #{offlineBy,jdbcType=VARCHAR}, #{offlineReason,jdbcType=VARCHAR})
+    </insert>
+
+    <!-- 更新接口 -->
+    <update id="updateById" parameterType="com.powertrading.interfaces.entity.Interface">
+        UPDATE interfaces
+        <set>
+            <if test="interfaceName != null">interface_name = #{interfaceName,jdbcType=VARCHAR},</if>
+            <if test="interfacePath != null">interface_path = #{interfacePath,jdbcType=VARCHAR},</if>
+            <if test="description != null">description = #{description,jdbcType=VARCHAR},</if>
+            <if test="categoryId != null">category_id = #{categoryId,jdbcType=VARCHAR},</if>
+            <if test="status != null">status = #{status,jdbcType=VARCHAR},</if>
+            <if test="version != null">version = #{version,jdbcType=VARCHAR},</if>
+            <if test="sqlTemplate != null">sql_template = #{sqlTemplate,jdbcType=LONGVARCHAR},</if>
+            <if test="responseFormat != null">response_format = #{responseFormat,jdbcType=LONGVARCHAR},</if>
+            <if test="rateLimit != null">rate_limit = #{rateLimit,jdbcType=INTEGER},</if>
+            <if test="timeout != null">timeout = #{timeout,jdbcType=INTEGER},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="updateBy != null">update_by = #{updateBy,jdbcType=VARCHAR},</if>
+            <if test="publishTime != null">publish_time = #{publishTime,jdbcType=TIMESTAMP},</if>
+            <if test="publishBy != null">publish_by = #{publishBy,jdbcType=VARCHAR},</if>
+            <if test="offlineTime != null">offline_time = #{offlineTime,jdbcType=TIMESTAMP},</if>
+            <if test="offlineBy != null">offline_by = #{offlineBy,jdbcType=VARCHAR},</if>
+            <if test="offlineReason != null">offline_reason = #{offlineReason,jdbcType=VARCHAR},</if>
+        </set>
+        WHERE id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <!-- 删除接口 -->
+    <delete id="deleteById" parameterType="java.lang.String">
+        DELETE FROM interfaces WHERE id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+    <!-- 根据分类ID统计接口数量 -->
+    <select id="countByCategoryId" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(*) FROM interfaces WHERE category_id = #{categoryId,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 根据数据源ID统计接口数量 -->
+    <select id="countByDataSourceId" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(*) FROM interfaces WHERE data_source_id = #{dataSourceId,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 根据状态统计接口数量 -->
+    <select id="countByStatus" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(*) FROM interfaces WHERE status = #{status,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 接口统计信息结果映射 -->
+    <resultMap id="InterfaceStatisticsResultMap" type="com.powertrading.interfaces.mapper.InterfaceMapper$InterfaceStatistics">
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="count" property="count" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <!-- 查询接口状态统计 -->
+    <select id="selectInterfaceStatistics" resultMap="InterfaceStatisticsResultMap">
+        SELECT status, COUNT(*) as count
+        FROM interfaces
+        GROUP BY status
+    </select>
+
+</mapper>

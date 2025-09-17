@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.powertrading.interfaces.mapper.InterfaceCategoryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.powertrading.interfaces.entity.InterfaceCategory">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="category_code" property="categoryCode" jdbcType="VARCHAR"/>
+        <result column="category_name" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="color" property="colorCode" jdbcType="VARCHAR"/>
+        <result column="sort_order" property="sortOrder" jdbcType="INTEGER"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="interface_count" property="interfaceCount" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, category_code, category_name, description, color, sort_order, status, create_time, update_time
+    </sql>
+
+    <!-- 查询启用的分类列表 -->
+    <select id="selectEnabledCategories" resultMap="BaseResultMap">
+        SELECT 
+            <include refid="Base_Column_List"/>,
+            (
+                SELECT COUNT(*) 
+                FROM interfaces i 
+                WHERE i.category_id = ic.id AND i.status = 'published'
+            ) as interface_count
+        FROM interface_categories ic
+        WHERE ic.status = 1
+        ORDER BY ic.sort_order ASC, ic.create_time ASC
+    </select>
+
+    <!-- 根据ID查询分类 -->
+    <select id="selectById" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM interface_categories
+        WHERE id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 根据分类代码查询分类 -->
+    <select id="selectByCategoryCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM interface_categories
+        WHERE category_code = #{categoryCode,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 插入分类 -->
+    <insert id="insert" parameterType="com.powertrading.interfaces.entity.InterfaceCategory">
+        INSERT INTO interface_categories
+        (id, category_code, category_name, description, color_code, sort_order, status, create_time, update_time)
+        VALUES
+        (#{id,jdbcType=VARCHAR}, #{categoryCode,jdbcType=VARCHAR}, #{categoryName,jdbcType=VARCHAR}, 
+         #{description,jdbcType=VARCHAR}, #{colorCode,jdbcType=VARCHAR}, #{sortOrder,jdbcType=INTEGER}, 
+         #{status,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
+    </insert>
+
+    <!-- 更新分类 -->
+    <update id="updateById" parameterType="com.powertrading.interfaces.entity.InterfaceCategory">
+        UPDATE interface_categories
+        SET category_name = #{categoryName,jdbcType=VARCHAR},
+            description = #{description,jdbcType=VARCHAR},
+            color_code = #{colorCode,jdbcType=VARCHAR},
+            sort_order = #{sortOrder,jdbcType=INTEGER},
+            status = #{status,jdbcType=TINYINT},
+            update_time = #{updateTime,jdbcType=TIMESTAMP}
+        WHERE id = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <!-- 删除分类 -->
+    <delete id="deleteById" parameterType="java.lang.String">
+        DELETE FROM interface_categories WHERE id = #{id,jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

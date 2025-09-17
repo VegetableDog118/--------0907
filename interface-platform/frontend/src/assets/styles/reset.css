@@ -1,0 +1,277 @@
+/* 现代CSS重置 - 基于normalize.css和现代最佳实践 */
+
+/* 1. 使用更直观的盒模型 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* 2. 移除默认边距 */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* 3. 改善媒体元素的默认行为 */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* 4. 移除内置表单元素的字体样式 */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* 5. 避免文本溢出 */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+  line-height: var(--line-height-base);
+}
+
+/* 6. 改善行高在大文本中的表现 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: var(--line-height-small);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 7. 创建根堆叠上下文 */
+#app,
+#root {
+  isolation: isolate;
+}
+
+/* 8. 改善默认的滚动行为 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 9. 设置基础字体和颜色 */
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--text-primary);
+  background-color: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 10. 改善链接的默认样式 */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: var(--transition-base);
+}
+
+a:hover {
+  color: var(--primary-light);
+  text-decoration: underline;
+}
+
+a:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* 11. 改善按钮的默认样式 */
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* 12. 改善表单元素的默认样式 */
+input,
+textarea,
+select {
+  border: 1px solid var(--border-base);
+  border-radius: var(--border-radius-base);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  transition: var(--transition-base);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-extra-light);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-placeholder);
+}
+
+/* 13. 改善表格的默认样式 */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-lighter);
+}
+
+th {
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: var(--bg-light);
+}
+
+/* 14. 改善列表的默认样式 */
+ul,
+ol {
+  list-style: none;
+}
+
+/* 15. 改善引用的默认样式 */
+blockquote {
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-left: 4px solid var(--primary-color);
+  background-color: var(--bg-extra-light);
+  font-style: italic;
+}
+
+/* 16. 改善代码的默认样式 */
+code,
+pre {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+}
+
+code {
+  padding: 2px 4px;
+  background-color: var(--bg-light);
+  border-radius: var(--border-radius-small);
+  color: var(--danger-color);
+}
+
+pre {
+  padding: var(--spacing-md);
+  background-color: var(--bg-light);
+  border-radius: var(--border-radius-base);
+  overflow-x: auto;
+  line-height: 1.4;
+}
+
+pre code {
+  padding: 0;
+  background: none;
+  color: inherit;
+}
+
+/* 17. 改善分割线的默认样式 */
+hr {
+  border: none;
+  height: 1px;
+  background-color: var(--border-lighter);
+  margin: var(--spacing-xl) 0;
+}
+
+/* 18. 无障碍改进 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 19. 打印样式优化 */
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+  }
+
+  abbr[title]::after {
+    content: " (" attr(title) ")";
+  }
+
+  pre {
+    white-space: pre-wrap !important;
+  }
+
+  pre,
+  blockquote {
+    border: 1px solid #999;
+    page-break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr,
+  img {
+    page-break-inside: avoid;
+  }
+
+  p,
+  h2,
+  h3 {
+    orphans: 3;
+    widows: 3;
+  }
+
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}

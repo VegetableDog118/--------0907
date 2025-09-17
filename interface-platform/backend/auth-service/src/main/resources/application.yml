@@ -1,0 +1,243 @@
+# 认证服务配置文件
+server:
+  port: 8081
+  servlet:
+    context-path: /auth-service
+
+spring:
+  application:
+    name: auth-service
+  
+  # Nacos配置
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+  
+  # Redis配置
+  redis:
+    host: localhost
+    port: 6379
+    password: 
+    database: 0
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+  
+  # 数据源配置（如果需要数据库）
+  datasource:
+    url: jdbc:mysql://localhost:3306/interface_platform?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: platform
+    password: platform123 
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+# JWT配置
+jwt:
+  secret: powerTradingInterfacePlatformJwtSecretKey2024
+  expiration: 3600 # 1小时（秒）
+  refresh-expiration: 86400 # 24小时（秒）
+  issuer: PowerTrading-Interface-Platform
+
+# 安全策略配置
+security:
+  policy:
+    max-login-attempts: 5
+    account-lock-duration: 30 # 分钟
+    password:
+      min-length: 8
+      require-uppercase: true
+      require-lowercase: true
+      require-numbers: true
+      require-symbols: true
+    session-timeout: 3600 # 秒
+    enable-ip-whitelist: false
+    enable-two-factor-auth: false
+
+# 缓存配置
+cache:
+  redis:
+    default-ttl: 1800 # 30分钟（秒）
+    user-permissions-ttl: 1800 # 30分钟
+    user-roles-ttl: 1800 # 30分钟
+    role-permissions-ttl: 3600 # 60分钟
+    api-permissions-ttl: 7200 # 120分钟
+
+# 网关集成配置
+gateway:
+  auth:
+    enabled: true
+    exclude-paths:
+      - /api/auth/health
+      - /api/public/**
+      - /swagger-ui/**
+      - /v3/api-docs/**
+    auth-paths:
+      - /api/auth/authenticate
+      - /api/auth/quick
+
+# 审计日志配置
+audit:
+  log:
+    enabled: true
+    retention-days: 30
+    async-processing: true
+    batch-size: 100
+
+# 日志配置
+logging:
+  level:
+    com.powertrading.auth: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.data.redis: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/auth-service.log
+    max-size: 100MB
+    max-history: 30
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Swagger文档配置
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  info:
+    title: 认证服务API
+    description: PowerTrading接口平台认证服务
+    version: 2.0.0
+    contact:
+      name: PowerTrading Team
+      email: dev@powertrading.com
+
+# 自定义配置
+app:
+  name: PowerTrading Interface Platform Auth Service
+  version: 2.0.0
+  description: 提供统一的认证和授权服务
+  
+  # API密钥配置
+  api-key:
+    default-expiration: 2592000 # 30天（秒）
+    max-keys-per-app: 10
+    
+  # Token黑名单配置
+  token-blacklist:
+    cleanup-interval: 3600 # 1小时（秒）
+    max-size: 100000
+    
+  # 统计配置
+  statistics:
+    enabled: true
+    retention-days: 90
+    
+  # 安全告警配置
+  security-alert:
+    enabled: true
+    max-failed-attempts: 10
+    suspicious-ip-threshold: 50
+    notification-email: security@powertrading.com
+
+---
+# 开发环境配置
+spring:
+  profiles: dev
+  
+logging:
+  level:
+    com.powertrading.auth: DEBUG
+    root: INFO
+
+jwt:
+  secret: devSecretKeyForTesting2024
+
+security:
+  policy:
+    max-login-attempts: 10 # 开发环境放宽限制
+
+---
+# 测试环境配置
+spring:
+  profiles: test
+  
+  redis:
+    host: test-redis
+    port: 6379
+    
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+    
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+
+jwt:
+  secret: testSecretKeyForUnitTesting2024
+  expiration: 300 # 5分钟（测试用）
+
+---
+# 生产环境配置
+spring:
+  profiles: prod
+  
+logging:
+  level:
+    com.powertrading.auth: INFO
+    root: WARN
+    
+security:
+  policy:
+    max-login-attempts: 3 # 生产环境更严格
+    account-lock-duration: 60 # 1小时
+    enable-two-factor-auth: true
+
+audit:
+  log:
+    retention-days: 90 # 生产环境保留更长时间
+
+app:
+  security-alert:
+    max-failed-attempts: 5
+    suspicious-ip-threshold: 20
